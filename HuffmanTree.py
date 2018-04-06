@@ -5,7 +5,7 @@ def updateTree(char_freqs, verbose=False):
     new_tree = []
     min_heap = []
     for symbol in char_freqs:
-        heappush(min_heap, [char_freqs[symbol], symbol])
+        heappush(min_heap, [char_freqs[symbol], [symbol]])
 
     if verbose:
         print('>> constructing tree')

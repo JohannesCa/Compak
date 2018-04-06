@@ -1,7 +1,7 @@
 .idea/
 Backup/
 __pycache__/
-output/*
+output/
 *.pyc
 *.[ao]
 *.tmp

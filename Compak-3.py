@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-# -*- coding: latin-1 -*-
+# -*- coding: utf-8 -*-
 
 import PordeusHuffman
 from sys import argv
@@ -8,7 +8,7 @@ from sys import argv
 if __name__ == '__main__':
     print(
         '''
-    Compak --- Version 3.1.2 Apr 3 2018
+    Compak --- Version 3.5.0 Apr 3 2018
     Copyright (c) 2018 by all Contributors,
     ALL RIGHTS RESERVED
         ''')

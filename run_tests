@@ -1,6 +1,6 @@
 #!/bin/bash
 
-declare -a files=("default.txt" "lorem-ipsum.txt" "generated.bin" "generated.fib25" "generated.equal")
+declare -a files=("default.txt" "lorem-ipsum.txt" "generated2.bin" "generated3.bin" "generated.bin" "generated.fib25" "generated.equal")
 
 
 echo "...Cleaning output dir"
@@ -16,4 +16,4 @@ do
    diff -s files/$i output/$i
 done
 
-echo "Testing done"
+echo "...Testing done"
