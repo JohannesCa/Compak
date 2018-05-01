@@ -2,13 +2,14 @@
 # -*- coding: utf-8 -*-
 
 import PordeusHuffman
+import PordeusLZW
 from sys import argv
 
 
 if __name__ == '__main__':
     print(
         '''
-    Compak --- Version 3.5.0 Apr 3 2018
+    Compak --- Version 3.6.0 Apr 30 2018
     Copyright (c) 2018 by all Contributors,
     ALL RIGHTS RESERVED
         ''')
@@ -18,19 +19,19 @@ if __name__ == '__main__':
     compress, decompress = False, False
 
     # print(argv)
-    if len(argv) < 2 or len(argv) > 3:
-        print('Usage: ', argv[0], '[flags] <input file>')
+    if len(argv) < 2 or len(argv) > 4:
+        print('Usage: ', argv[0], '[options] <input file>')
         exit(-1)
 
     if len(argv) == 2:
         if argv[1] == '-h':
             print(
                 '''
-    Usage:''', argv[0], '''<input file>
+    Usage:''', argv[0], '''[options] <input file>
     
     
 DESCRIPTION
-    Compak - A semi-adaptive Huffman Compressor
+    Compak - A multi method compressor
     
     Authors:
         Johannes Pordeus
@@ -43,42 +44,55 @@ DEFAULT OPERATION
 
 
 OPTIONS
-    PACKING OPTIONS
-        -c --compress
-            Compress a single file and save compressed file with the same name case the option -o is not set.
+    -d --default
+        Use Huffman compressor (semi-adaptive).
             
-        -u --unpack
-            Decompress a single file and save decompressed file with the same name case option -o is not set.
-                '''
+    -z --lzw [dict_max_size]
+        Use LZW compressing method, limiting the size of the dictionary. Case dict_max_size is not defined, the
+        dictionary has undefined size (unlimited). Minimum dictionary size = 256.
+            '''
             )
             exit(0)
 
         else:
+            print('>> Using Huffman method')
+
+            # File name is in the 1st position
             pack_file = argv[1]
             unpack_file = 'output/' + pack_file.split('.')[0] + '.meta'
-            compress = True
-            decompress = True
 
-    elif len(argv) == 3:
-        if argv[1] == '-c':
+            print('>> Compressing file', pack_file)
+            PordeusHuffman.compak(pack_file)
+
+            print('>> Decompressing file', unpack_file)
+            PordeusHuffman.unpack(unpack_file)
+            exit(0)
+
+    # Case there is a flag
+    elif len(argv) == 3 or len(argv) == 4:
+        dict_max_size = 256
+        pack_file = ''
+
+        # Case dict_max_size is not defined, file name is in 2nd position
+        if len(argv) == 3:
             pack_file = argv[2]
-            compress = True
-
-        elif argv[1] == '-u':
-            unpack_file = 'output/' + argv[2]
-            if argv[2].split('.')[-1] != 'meta':
-                print('ERROR: Invalid file extension. Expected *.meta')
-                exit(-1)
-            decompress = True
-
+        # Else, it's on 3rd position
         else:
-            print('Usage: ', argv[0], '[flags] <input file>')
+            pack_file = argv[3]
+
+        # Verifying the flag
+        if argv[1] == '-l' or argv[1] == '--lzw':
+            print('>> Using LZW method')
+            unpack_file = pack_file.split('.')[0] + '.metaz'
+
+            print('>> Compressing file', pack_file)
+            PordeusLZW.lzw_compress(dict_max_size, pack_file, unpack_file)
+
+            # print('>> Decompressing file', unpack_file)
+            # PordeusLZW.lzw_decompress(unpack_file)
+            exit(0)
+
+        # Case crippled call
+        else:
+            print('Usage: ', argv[0], '[options] <input file>')
             exit(-1)
-
-    if compress:
-        print('>> Compressing file', pack_file)
-        PordeusHuffman.compak(pack_file)
-
-    if decompress:
-        print('>> Decompressing file', unpack_file)
-        PordeusHuffman.unpack(unpack_file)
