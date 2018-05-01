@@ -1,5 +1,4 @@
 import progressbar
-from math import trunc
 
 
 def bitstring_to_bytes(s, showprogress=False):

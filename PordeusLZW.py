@@ -30,7 +30,6 @@ def lzw_compress(dict_size, input_file, output_file, verbose=False):
     with open('files/' + input_file, 'rb') as inputf:
         data = list(inputf.read())
         data = [str(x) for x in data]
-        data = data[:-1]
 
     if verbose:
         print('-- Reading input:\n', data)
@@ -64,7 +63,8 @@ def lzw_compress(dict_size, input_file, output_file, verbose=False):
             index += 1
 
     # Calculate de maximum index length
-    index_size = floor(log2(index) + 1)
+    word_max_size = floor(log2(index) + 1)
+    index_size = floor(log2(word_max_size) + 1)
 
     # Generating byte code
     bytecode = intarray_to_bytes(code, index_size, showprogress=True)
@@ -78,8 +78,8 @@ def lzw_compress(dict_size, input_file, output_file, verbose=False):
     bytecode = max_dict_size + int_to_byte(index_size) + bytecode
 
     if verbose:
-        print('-- Final code: ', code)
-        print('-- Byte code:', bytecode)
+        print('-- Final code:\n', code)
+        print('-- Byte code:\n', bytecode)
 
     # Writing output file
     compressed_file = 'output/' + output_file
@@ -98,27 +98,76 @@ def lzw_compress(dict_size, input_file, output_file, verbose=False):
     print('   -- Compression ratio:\t {0:.3f}\n\n'.format(compress_ratio))
 
 
-def lzw_decompress(input_file):
+def lzw_decompress(input_file, original_format, verbose=False):
     # Preparing dict
     dictionary = dict()
     for i in range(256):
         aux = str(i)
-        dictionary.update({aux: i})
+        dictionary.update({i: aux})
 
     # Read the input file and prepare the output
     with open('output/' + input_file, 'rb') as inputf:
         data = bytes(inputf.read())
 
+    if verbose:
+        print('-- Read data:\n', data)
+
+    # Get dictionary max size and index size
     dict_max_size = data[0]*256 + data[1]
     index_size = data[2]
 
+    if verbose:
+        print('-- Metadata:')
+        print('\tdict_max_size:', dict_max_size)
+        print('\tindex_size:', index_size)
+
+    # Setting up the actual data in binary, with the padding
     data = data[3:]
     data = ['0'*(8-len(bin(x)[2:])) + bin(x)[2:] for x in data]
-    bitstring = ''
 
+    # Fetch bitstring
+    bitstring = ''
     for i in range(len(data)):
         bitstring += data[i]
 
+    # Decode operation
+    string = ''
+    index = 256
 
-    print(data)
-    print(bitstring)
+    while bitstring:
+        try:
+            codeword_len = int(bitstring[:index_size], 2)
+            bitstring = bitstring[index_size:]
+
+            codeword = int(bitstring[:codeword_len], 2)
+            bitstring = bitstring[codeword_len:]
+
+        except ValueError:
+            break
+
+        char = dictionary[codeword]
+        string += '|' + char
+
+        if index == 256:
+            dictionary.update({index: char})
+            index += 1
+
+        elif index < dict_max_size:
+            dictionary[index-1] += '|' + char.split('|')[0]
+            dictionary.update({index: char})
+            index += 1
+
+    # Saving string and preparing to write to file
+    string = [int(x) for x in string.split('|')[1:]]
+    data = bytes(string)
+
+    if verbose:
+        print('-- Found string:\n', string)
+
+    # Write output file
+    file_name = input_file.split('.')[0] + '.' + original_format
+    print('\n>> Writing decompressed file: ', file_name)
+    with open('output/' + file_name, 'wb') as output:
+        output.write(data)
+
+    print('>> Done!')

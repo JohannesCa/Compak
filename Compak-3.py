@@ -88,10 +88,10 @@ OPTIONS
             unpack_file = pack_file.split('.')[0] + '.lzp'
 
             print('>> Compressing file', pack_file)
-            PordeusLZW.lzw_compress(dict_max_size, pack_file, unpack_file, verbose=True)
+            PordeusLZW.lzw_compress(dict_max_size, pack_file, unpack_file, verbose=False)
 
             print('>> Decompressing file', unpack_file)
-            PordeusLZW.lzw_decompress(unpack_file)
+            PordeusLZW.lzw_decompress(unpack_file, pack_file.split('.')[-1], verbose=False)
             exit(0)
 
         # Case crippled call
