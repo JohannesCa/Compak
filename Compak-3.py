@@ -85,13 +85,13 @@ OPTIONS
         # Verifying the flag
         if argv[1] == '-l' or argv[1] == '--lzw':
             print('>> Using LZW method')
-            unpack_file = pack_file.split('.')[0] + '.metaz'
+            unpack_file = pack_file.split('.')[0] + '.lzp'
 
             print('>> Compressing file', pack_file)
-            PordeusLZW.lzw_compress(dict_max_size, pack_file, unpack_file)
+            PordeusLZW.lzw_compress(dict_max_size, pack_file, unpack_file, verbose=True)
 
-            # print('>> Decompressing file', unpack_file)
-            # PordeusLZW.lzw_decompress(unpack_file)
+            print('>> Decompressing file', unpack_file)
+            PordeusLZW.lzw_decompress(unpack_file)
             exit(0)
 
         # Case crippled call
