@@ -76,8 +76,10 @@ OPTIONS
         # Case dict_max_size is not defined, file name is in 2nd position
         if len(argv) == 3:
             pack_file = argv[2]
-        # Else, it's on 3rd position
+            # Else, it's on 3rd position
+
         else:
+            dict_max_size = int(argv[2])
             pack_file = argv[3]
 
         # Verifying the flag
