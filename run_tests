@@ -1,7 +1,6 @@
 #!/bin/bash
 
-declare -a files=("default.txt" "lorem-ipsum.txt" "generated2.bin" "generated3.bin" "generated.bin" "generated.fib25" "generated.equal")
-
+declare -a files=("generated.fib25" "generated.equal")
 
 echo "...Cleaning output dir"
 rm -f output/*
@@ -9,11 +8,11 @@ rm -f output/*
 for i in "${files[@]}"
 do
    echo "...Testing compression with file $i"
-   echo "./Compak-3.py $i"
    ./Compak-3.py $i
+   echo ""
    echo "...Comparing input file and generated file (diff)"
-   echo "diff -s files/$i output/$i"
    diff -s files/$i output/$i
+   echo ""
 done
 
 echo "...Testing done"
