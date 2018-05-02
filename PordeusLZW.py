@@ -1,7 +1,5 @@
 from itsdangerous import int_to_byte, int_to_bytes
 from iteration_utilities import deepflatten
-from scipy.sparse.csgraph._traversal import depth_first_order
-
 from Convertions import intarray_to_bytes
 from math import log2, floor
 from os import stat
@@ -47,7 +45,8 @@ def lzw_compress(dict_size, input_file, output_file, verbose=False):
 
             # Try to append the next symbol of the word to the block
             try:
-                new_block += '|' + data[sym]
+                aux = data[sym]
+                new_block += '|' + aux
 
             except IndexError:
                 break
@@ -59,6 +58,9 @@ def lzw_compress(dict_size, input_file, output_file, verbose=False):
         if new_block not in dictionary and index < max_dict_size:
             dictionary.update({new_block: index})
             index += 1
+
+    with open('output/dict1.comp', 'w') as test:
+        test.write(str(dictionary))
 
     # Calculate de maximum index length
     word_max_size = floor(log2(index) + 1)
@@ -76,8 +78,8 @@ def lzw_compress(dict_size, input_file, output_file, verbose=False):
     bytecode = max_dict_size + int_to_byte(index_size) + bytecode
 
     if verbose:
-        print('-- Final code:\n', code)
-        print('-- Byte code:\n', bytecode)
+        print('\n-- Final code:\n', code)
+        print('\n-- Byte code:\n', bytecode)
 
     # Writing output file
     compressed_file = 'output/' + output_file
@@ -132,30 +134,35 @@ def lzw_decompress(input_file, original_format, verbose=False):
     string = list()
     index = 256
 
-    while bitstring:
-        try:
-            codeword_len = int(bitstring[:index_size], 2)
-            bitstring = bitstring[index_size:]
+    progress = 0
+    with progressbar.ProgressBar(max_value=len(bitstring)) as bar:
+        while bitstring:
+            try:
+                codeword_len = int(bitstring[:index_size], 2)
+                bitstring = bitstring[index_size:]
 
-            codeword = int(bitstring[:codeword_len], 2)
-            bitstring = bitstring[codeword_len:]
+                codeword = int(bitstring[:codeword_len], 2)
+                bitstring = bitstring[codeword_len:]
 
-        except ValueError:
-            break
+            except ValueError:
+                break
 
-        char = dictionary[codeword]
-        string.append(char)
-        if verbose:
-            print('-- Decoded', codeword, char)
+            char = dictionary[codeword]
+            string.append(char)
+            if verbose:
+                print('-- Decoded', codeword, char)
 
-        if index == 256:
-            dictionary.update({index: list(char)})
-            index += 1
+            if index == 256:
+                dictionary.update({index: list(char)})
+                index += 1
 
-        elif index < dict_max_size:
-            dictionary[index-1].append(char[0])
-            dictionary.update({index: list(char)})
-            index += 1
+            elif index < dict_max_size:
+                dictionary[index-1].append(char[0])
+                dictionary.update({index: list(char)})
+                index += 1
+
+            progress += codeword_len + index_size
+            bar.update(progress)
 
     # Saving string and preparing to write to file
     string = list(deepflatten(string, depth=1))
@@ -167,7 +174,7 @@ def lzw_decompress(input_file, original_format, verbose=False):
 
     # Write output file
     file_name = input_file.split('.')[0] + '.' + original_format
-    print('\n>> Writing decompressed file: ', file_name)
+    print('\n\n>> Writing decompressed file: ', file_name)
     with open('output/' + file_name, 'wb') as output:
         output.write(data)
 

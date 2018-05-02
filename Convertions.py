@@ -43,7 +43,7 @@ def intarray_to_bytes(int_list, length, showprogress=False):
             counter += 1
             bar.update(counter)
 
-    print('\n-- Generating bytecode')
+    print('\n\n-- Generating bytecode')
     return bitstring_to_bytes(bitstring, showprogress)
 
 
