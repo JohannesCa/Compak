@@ -1,6 +1,7 @@
-from locale import str
-
 from itsdangerous import int_to_byte, int_to_bytes
+from iteration_utilities import deepflatten
+from scipy.sparse.csgraph._traversal import depth_first_order
+
 from Convertions import intarray_to_bytes
 from math import log2, floor
 from os import stat
@@ -22,9 +23,6 @@ def lzw_compress(dict_size, input_file, output_file, verbose=False):
     for i in range(256):
         aux = str(i)
         dictionary.update({aux: i})
-
-    # dictionary = {'97': 0, '98': 1, '99': 2, '100': 3, '114': 4}
-    # max_dict_size =
 
     # Read the input file and save data as string list
     with open('files/' + input_file, 'rb') as inputf:
@@ -103,7 +101,7 @@ def lzw_decompress(input_file, original_format, verbose=False):
     dictionary = dict()
     for i in range(256):
         aux = str(i)
-        dictionary.update({i: aux})
+        dictionary.update({i: [aux]})
 
     # Read the input file and prepare the output
     with open('output/' + input_file, 'rb') as inputf:
@@ -131,7 +129,7 @@ def lzw_decompress(input_file, original_format, verbose=False):
         bitstring += data[i]
 
     # Decode operation
-    string = ''
+    string = list()
     index = 256
 
     while bitstring:
@@ -146,23 +144,26 @@ def lzw_decompress(input_file, original_format, verbose=False):
             break
 
         char = dictionary[codeword]
-        string += '|' + char
+        string.append(char)
+        if verbose:
+            print('-- Decoded', codeword, char)
 
         if index == 256:
-            dictionary.update({index: char})
+            dictionary.update({index: list(char)})
             index += 1
 
         elif index < dict_max_size:
-            dictionary[index-1] += '|' + char.split('|')[0]
-            dictionary.update({index: char})
+            dictionary[index-1].append(char[0])
+            dictionary.update({index: list(char)})
             index += 1
 
     # Saving string and preparing to write to file
-    string = [int(x) for x in string.split('|')[1:]]
-    data = bytes(string)
+    string = list(deepflatten(string, depth=1))
+    data = [int(x) for x in string]
+    data = bytes(data)
 
     if verbose:
-        print('-- Found string:\n', string)
+        print('-- Found string:\n', data)
 
     # Write output file
     file_name = input_file.split('.')[0] + '.' + original_format
