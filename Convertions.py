@@ -29,7 +29,7 @@ def intarray_to_bytes(int_list, length, showprogress=False):
         bar = progressbar.ProgressBar(max_value=progressbar.UnknownLength)
         counter = 0
 
-    print('-- Generating bitarrays')
+    print('\n-- Generating bitarrays')
     for i in range(len(int_list)):
         binval = bin(int_list[i])[2:]
 

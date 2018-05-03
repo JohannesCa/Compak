@@ -12,6 +12,11 @@ def lzw_compress(dict_size, input_file, output_file, verbose=False):
 
     if max_dict_size < 256:
         max_dict_size = 256
+        print('-- INFO: Using dictionary minimum size ({})\n'.format(max_dict_size))
+
+    elif max_dict_size > 0xffff:
+        max_dict_size = 0xffff
+        print('-- INFO: Using dictionary maximum size ({})\n'.format(max_dict_size))
 
     if verbose:
         print('-- Dictionary max size:', max_dict_size)
@@ -34,33 +39,34 @@ def lzw_compress(dict_size, input_file, output_file, verbose=False):
     index = 256
     sym = 0
 
-    while sym < len(data):
-        new_block = data[sym]
-        block = data[sym]
+    print('-- Indexing blocks:')
+    with progressbar.ProgressBar(max_value=len(data)) as bar:
+        while sym < len(data):
+            new_block = data[sym]
+            block = data[sym]
 
-        # Verify if the block is already in the dictionary
-        while new_block in dictionary:
-            block = new_block
-            sym += 1
+            # Verify if the block is already in the dictionary
+            while new_block in dictionary:
+                block = new_block
+                sym += 1
 
-            # Try to append the next symbol of the word to the block
-            try:
-                aux = data[sym]
-                new_block += '|' + aux
+                # Try to append the next symbol of the word to the block
+                try:
+                    aux = data[sym]
+                    new_block += '|' + aux
 
-            except IndexError:
-                break
+                except IndexError:
+                    break
 
-        # Now get the code corresponding to the block
-        code.append(dictionary[block])
+            # Now get the code corresponding to the block
+            code.append(dictionary[block])
 
-        # Adds the new block to the dictionary if the dict is not full
-        if new_block not in dictionary and index < max_dict_size:
-            dictionary.update({new_block: index})
-            index += 1
+            # Adds the new block to the dictionary if the dict is not full
+            if new_block not in dictionary and index < max_dict_size:
+                dictionary.update({new_block: index})
+                index += 1
 
-    with open('output/dict1.comp', 'w') as test:
-        test.write(str(dictionary))
+            bar.update(sym)
 
     # Calculate de maximum index length
     word_max_size = floor(log2(index) + 1)
@@ -83,7 +89,7 @@ def lzw_compress(dict_size, input_file, output_file, verbose=False):
 
     # Writing output file
     compressed_file = 'output/' + output_file
-    print('\n>> Writing compressed file:', compressed_file)
+    print('\n\n>> Writing compressed file:', compressed_file)
     with open(compressed_file, 'wb') as output:
         output.write(bytecode)
 
@@ -102,8 +108,7 @@ def lzw_decompress(input_file, original_format, verbose=False):
     # Preparing dict
     dictionary = dict()
     for i in range(256):
-        aux = str(i)
-        dictionary.update({i: [aux]})
+        dictionary.update({i: [i]})
 
     # Read the input file and prepare the output
     with open('output/' + input_file, 'rb') as inputf:
@@ -161,6 +166,10 @@ def lzw_decompress(input_file, original_format, verbose=False):
                 dictionary.update({index: list(char)})
                 index += 1
 
+            elif index == dict_max_size:
+                dictionary[index-1].append(char[0])
+                index += 1
+
             progress += codeword_len + index_size
             bar.update(progress)
 
@@ -174,7 +183,7 @@ def lzw_decompress(input_file, original_format, verbose=False):
 
     # Write output file
     file_name = input_file.split('.')[0] + '.' + original_format
-    print('\n\n>> Writing decompressed file: ', file_name)
+    print('\n>> Writing decompressed file: ', file_name)
     with open('output/' + file_name, 'wb') as output:
         output.write(data)
 

@@ -9,7 +9,7 @@ from sys import argv
 if __name__ == '__main__':
     print(
         '''
-    Compak --- Version 3.6.0 Apr 30 2018
+    Compak --- Version 3.6.10 Apr 30 2018
     Copyright (c) 2018 by all Contributors,
     ALL RIGHTS RESERVED
         ''')
@@ -47,7 +47,7 @@ OPTIONS
     -d --default
         Use Huffman compressor (semi-adaptive).
             
-    -z --lzw [dict_max_size]
+    -l --lzw [dict_max_size]
         Use LZW compressing method, limiting the size of the dictionary. Case dict_max_size is not defined, the
         dictionary has undefined size (unlimited). Minimum dictionary size = 256.
             '''
